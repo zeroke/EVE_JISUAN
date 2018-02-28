@@ -30,8 +30,8 @@
     @foreach($data as $v)
         <tr>
             <td>{{ $v['name'] }}</td>
-            <td>{{ $v['output'] }}</td>
-            <td>{{ $v['buy'] }}</td>
+            <td>{{ $v['output'] * $v['vol'] }} m3 / {{ $v['output'] }}</td>
+            <td>{{ $v['buy'] }} / {{ $v['buy_num'] }}</td>
             <td>{{ $v['sell'] }}</td>
             <td>{{ $v['profit_avg_0'] }}</td>
             <td>{{ $v['profit_avg_1'] }}</td>
