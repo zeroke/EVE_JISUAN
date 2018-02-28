@@ -5,28 +5,50 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Laravel</title>
-    <link href="{{asset('/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet" media="screen">
+    <link href="{{ asset('/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
+    <link href="{{ asset('/js/DataTables-1.10.15/media/css/dataTables.bootstrap.min.css') }}" rel="stylesheet" media="screen">
+    <script type="text/javascript" src="{{ asset('/js/DataTables-1.10.15/media/js/jquery.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/js/DataTables-1.10.15/media/js/jquery.dataTables.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/js/DataTables-1.10.15/media/js/dataTables.bootstrap.min.js') }}"></script>
 </head>
 <body>
 
-<div class="container">
-    @foreach($data['sell_to_sell'] as $v)
-        <div class="row">
-            <div class="col-md-2">{{ $v['name'] }}</div>
-            <div class="col-md-1">{{ $v['output'] }}</div>
-            <div class="col-md-1">{{ $v['price'] }}</div>
-            <div class="col-md-1">{{ $v['profit_avg'] }}</div>
-            <div class="col-md-4">
-                <ul>
-                    @foreach($v['item'] as $i)
-                        <li>{{ $i['name'] }} : {{ $i['profit'] }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            <div class="col-md-1">{{ $v['profit'] + $v['profit_item'] }}</div>
-        </div>
+<table class="table" id="table2">
+    <thead>
+    <tr>
+        <th data-sortable="false">名称</th>
+        <th data-sortable="false">输出</th>
+        <th data-sortable="false">买单</th>
+        <th data-sortable="false">卖单</th>
+        <th>s_t_s</th>
+        <th>s_t_b</th>
+        <th>b_t_s</th>
+        <th>b_t_b</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach($data as $v)
+        <tr>
+            <td>{{ $v['name'] }}</td>
+            <td>{{ $v['output'] }}</td>
+            <td>{{ $v['buy'] }}</td>
+            <td>{{ $v['sell'] }}</td>
+            <td>{{ $v['profit_avg_0'] }}</td>
+            <td>{{ $v['profit_avg_1'] }}</td>
+            <td>{{ $v['profit_avg_2'] }}</td>
+            <td>{{ $v['profit_avg_3'] }}</td>
+        </tr>
     @endforeach
-</div>
+    </tbody>
+</table>
 
+<script>
+    $(function () {
+        $('#table2').dataTable({
+            'order' : [5, 'desc'],
+            'pageLength' : 50
+        });
+    })
+</script>
 </body>
 </html>

@@ -237,9 +237,12 @@ class MyController extends Controller
             $item['buy_money_out']  = bcmul($output, $item['buy']);
             $item['output']         = $output;
             foreach ($item['item'] as $_id) {
-                $item['item_money'][]  = bcmul($eve_price[$_id]['sell'], 100);
-                $item['sell_money_in'] += bcmul($eve_price[$_id]['sell'], 100);
-                $item['buy_money_in']  += bcmul($eve_price[$_id]['buy_avg'], 100);
+                $item['item_price'][$_id] = [
+                    'sell' => $eve_price[$_id]['sell'],
+                    'buy'  => $eve_price[$_id]['buy_avg']
+                ];
+                $item['sell_money_in']    += bcmul($eve_price[$_id]['sell'], 100);
+                $item['buy_money_in']     += bcmul($eve_price[$_id]['buy_avg'], 100);
             }
 
             // 卖单进 卖单出
@@ -258,29 +261,28 @@ class MyController extends Controller
 
         $data = [];
         foreach ($Composite as $id) {
-            $_item               = $this->_Item[$id];
-            $temp                = [];
-            $temp['name']        = $_item['name'];
-            $temp['price']       = $_item['sell'];
-            $temp['profit']      = $_item['profit_0'] * 2;
-            $temp['profit_item'] = 0;
-            foreach ($_item['item'] as $id2) {
-                $temp['item'][] = [
-                    'name'   => $eve_price[$id2]['name'],
-                    'price'  => $eve_price[$id2]['sell'],
-                    'profit' => $this->_Item[$id2]['profit_0']
-                ];
+            $_item = $this->_Item[$id];
 
-                $temp['profit_item'] += $this->_Item[$id2]['profit_0'];
+            $_item['profit_item_0'] = 0;
+            $_item['profit_item_1'] = 0;
+            $_item['profit_item_2'] = 0;
+            $_item['profit_item_3'] = 0;
+            foreach ($_item['item'] as $id2) {
+                $_item['profit_item_0'] += $this->_Item[$id2]['profit_0'];
+                $_item['profit_item_1'] += $this->_Item[$id2]['profit_1'];
+                $_item['profit_item_2'] += $this->_Item[$id2]['profit_2'];
+                $_item['profit_item_3'] += $this->_Item[$id2]['profit_3'];
             }
 
-            $temp['profit_avg'] = intval(($temp['profit'] + $temp['profit_item']) / (count($_item['item']) + 2));
-            $temp['output']     = $_item['output'];
+            $count = count($_item['item']) + 2;
 
-            $data['sell_to_sell'][$id] = $temp;
+            $_item['profit_avg_0'] = bcdiv($_item['profit_0'] * 2 + $_item['profit_item_0'], $count);
+            $_item['profit_avg_1'] = bcdiv($_item['profit_1'] * 2 + $_item['profit_item_0'], $count);
+            $_item['profit_avg_2'] = bcdiv($_item['profit_2'] * 2 + $_item['profit_item_3'], $count);
+            $_item['profit_avg_3'] = bcdiv($_item['profit_3'] * 2 + $_item['profit_item_3'], $count);
+
+            $data[$id] = $_item;
         }
-
-        array_multisort(array_column($data['sell_to_sell'], 'profit_avg'), SORT_DESC, $data['sell_to_sell']);
 
         return view('my.main2', ['data' => $data]);
     }
