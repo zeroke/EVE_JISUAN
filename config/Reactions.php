@@ -2,7 +2,17 @@
 
 return [
 
-    'api' => 'https://esi.tech.ccp.is/latest/markets/10000002/orders/?order_type=all',
+    'api' => 'https://esi.tech.ccp.is/latest/markets/__region__/orders/?order_type=all&type_id=__type__',
+
+    'region' => [
+        ['id' => 10000002, 'name' => '伏尔戈'],
+//        ['id' => 10000060, 'name' => '绝地']
+    ],
+
+    'location' => [
+        10000002 => 60003760,
+        10000060 => 1022734985679
+    ],
 
     'item' => [
         ['id' => 17317, 'name' => "Fermionic Condensates"],

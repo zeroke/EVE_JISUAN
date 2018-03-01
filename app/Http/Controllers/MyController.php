@@ -240,26 +240,29 @@ class MyController extends Controller
 
     public function main2()
     {
+        $eve_price = Cache::get('eve_price');
+        $eve_price = $eve_price[10000002];
+
         foreach ($this->_Item as $id => $item) {
-            $eve_price              = Cache::get("eve_price.{$id}");
-            $item['name']           = $eve_price['name'];
+            $price                  = $eve_price[$id];
+            $item['name']           = $price['name'];
             $item['sell_money_in']  = 0;
             $item['buy_money_in']   = 0;
-            $item['sell']           = $eve_price['sell'];
-            $item['buy']            = $eve_price['buy_avg'];
-            $item['buy_num']        = $eve_price['buy_num'];
+            $item['sell']           = $price['sell'];
+            $item['buy']            = $price['buy_avg'];
+            $item['buy_num']        = $price['buy_num'];
             $output                 = isset($item['output']) ? $item['output'] : 200;
             $item['sell_money_out'] = bcmul($output, $item['sell']);
             $item['buy_money_out']  = bcmul($output, $item['buy']);
             $item['output']         = $output;
             foreach ($item['item'] as $_id) {
-                $eve_item_price           = Cache::get("eve_price.{$_id}");
+                $item_price               = $eve_price[$_id];
                 $item['item_price'][$_id] = [
-                    'sell' => $eve_item_price['sell'],
-                    'buy'  => $eve_item_price['buy_avg']
+                    'sell' => $item_price['sell'],
+                    'buy'  => $item_price['buy_avg']
                 ];
-                $item['sell_money_in']    += bcmul($eve_item_price['sell'], 100);
-                $item['buy_money_in']     += bcmul($eve_item_price['buy_avg'], 100);
+                $item['sell_money_in']    += bcmul($item_price['sell'], 100);
+                $item['buy_money_in']     += bcmul($item_price['buy_avg'], 100);
             }
 
             // 卖单进 卖单出
@@ -306,29 +309,46 @@ class MyController extends Controller
 
     public function updatePrice()
     {
+        // 绝地 10000060  伏尔戈  10000002
+        // 绝地 1022734985679
+        // 吉他 60003760
+
+        $config  = config('Reactions');
+        $urlList = [];
+        foreach ($config['region'] as $region) {
+            foreach ($config['item'] as $item) {
+                $urlList[] = [
+                    'url'         => str_replace(['__region__', '__type__'], [$region['id'], $item['id']], $config['api']),
+                    'region'      => $region['id'],
+                    'item'        => $item['id'],
+                    'name'        => $item['name'],
+                    'region_name' => $region['name'],
+                    'location'    => $config['location'][$region['id']]
+                ];
+            }
+        }
+
         set_time_limit(0);
         $client = new Client(['verify' => false]);
 
-        $requests = function () use ($client) {
-            $list = config('Reactions.item');
-            $uri  = config('Reactions.api');
-            foreach ($list as $v) {
-                $url = "{$uri}&type_id={$v['id']}";
-                yield function () use ($client, $url) {
-                    return $client->getAsync($url);
+        $requests = function () use ($client, $urlList) {
+            foreach ($urlList as $v) {
+                yield function () use ($client, $v) {
+                    return $client->getAsync($v['url']);
                 };
             }
         };
 
-        $pool = new Pool($client, $requests(), [
-            'concurrency' => 10,
-            'fulfilled'   => function ($response, $index) {
-                $list   = config('Reactions.item');
+        $result = [];
+        $pool   = new Pool($client, $requests(), [
+//            'concurrency' => 10,
+            'fulfilled' => function ($response, $index) use ($urlList, &$result) {
+                $item   = $urlList[$index];
                 $res    = $response->getBody()->getContents();
                 $json   = \GuzzleHttp\json_decode($res);
                 $orders = [];
                 foreach ($json as $order) {
-                    if ($order->location_id != 60003760) continue;
+                    if ($order->location_id != $item['location']) continue;
                     $temp = [
                         'price' => $order->price,
                         'num'   => $order->volume_remain
@@ -340,28 +360,32 @@ class MyController extends Controller
                     }
                 }
 
-                array_multisort(array_column($orders['buy'], 'price'), SORT_DESC, $orders['buy']);
-                array_multisort(array_column($orders['sell'], 'price'), SORT_ASC, $orders['sell']);
-
-                $buy_max_price = $orders['buy'][0]['price'];
-                $buy_total_num = 0;
-                $buy_total_bal = 0;
-                foreach ($orders['buy'] as $o) {
-                    if ($o['price'] < $buy_max_price * 0.99) continue;
-                    $buy_total_num += $o['num'];
-                    $buy_total_bal += $o['num'] * $o['price'];
+                if (!empty($orders['sell'])) {
+                    array_multisort(array_column($orders['sell'], 'price'), SORT_ASC, $orders['sell']);
                 }
 
-                $item            = $list[$index];
+                $buy_max_price = 0;
+                $buy_total_num = 0;
+                $buy_total_bal = 0;
+                if (!empty($orders['buy'])) {
+                    array_multisort(array_column($orders['buy'], 'price'), SORT_DESC, $orders['buy']);
+                    $buy_max_price = $orders['buy'][0]['price'];
+                    foreach ($orders['buy'] as $o) {
+                        if ($o['price'] < $buy_max_price * 0.99) continue;
+                        $buy_total_num += $o['num'];
+                        $buy_total_bal += $o['num'] * $o['price'];
+                    }
+                }
+
                 $info['name']    = $item['name'];
-                $info['sell']    = $orders['sell'][0]['price'];
+                $info['sell']    = empty($orders['sell']) ? 0 : $orders['sell'][0]['price'];
                 $info['buy']     = $buy_max_price;
-                $info['buy_avg'] = bcdiv($buy_total_bal, $buy_total_num, 2);
+                $info['buy_avg'] = empty($orders['buy']) ? 0 : bcdiv($buy_total_bal, $buy_total_num, 2);
                 $info['buy_num'] = $buy_total_num;
 
-                Cache::forever("eve_price.{$item['id']}", $info);
+                $result[$urlList[$index]['region']][$item['item']] = $info;
             },
-            'rejected'    => function ($reason, $index) {
+            'rejected'  => function ($reason, $index) {
                 logger('获取订单出错', compact('reason', 'index'));
             },
         ]);
@@ -369,6 +393,9 @@ class MyController extends Controller
         // 开始发送请求
         $promise = $pool->promise();
         $promise->wait();
+
+        Cache::forever('eve_price', $result);
+
         return 'done';
     }
 }
