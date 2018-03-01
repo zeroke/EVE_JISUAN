@@ -15,3 +15,4 @@ Route::get('/my', 'MyController@main');
 Route::get('/my2', 'MyController@main2');
 
 Route::get('/updatePrice', 'MyController@updatePrice');
+Route::get('/updateDelvePrice', 'MyController@updateDelvePrice');

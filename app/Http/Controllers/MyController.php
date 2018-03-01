@@ -3,171 +3,13 @@
 namespace App\Http\Controllers;
 
 
+use App\Classes\EVEHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use Illuminate\Support\Facades\Cache;
 
 class MyController extends Controller
 {
-    private $_Item = [
-        33362 => [
-            'item'   => [16654, 16669],
-            'output' => 300,
-            'vol'    => 1
-        ],
-
-        16679 => [
-            'item'   => [16659, 16662],
-            'output' => 3000,
-            'vol'    => 0.15
-        ],
-
-        16680 => [
-            'item'   => [16658, 16663, 17959],
-            'output' => 2200,
-            'vol'    => 0.2
-        ],
-
-        16678 => [
-            'item'   => [16660, 16665],
-            'output' => 6000,
-            'vol'    => 0.05
-        ],
-
-        16682 => [
-            'item'   => [16664, 16668, 17959],
-            'output' => 750,
-            'vol'    => 0.6
-        ],
-
-        33360 => [
-            'item'   => [16657, 33337],
-            'output' => 300,
-            'vol'    => 1
-        ],
-
-        33359 => [
-            'item'   => [16655, 33336],
-            'output' => 300,
-            'vol'    => 1
-        ],
-
-        16670 => [
-            'item'   => [16655, 16659],
-            'output' => 10000,
-            'vol'    => 0.01
-        ],
-
-        16683 => [
-            'item'   => [16665, 16666, 16669, 17960],
-            'output' => 400,
-            'vol'    => 1
-        ],
-
-        33361 => [
-            'item'   => [16656, 16667],
-            'output' => 300,
-            'vol'    => 1
-        ],
-
-        17317 => [
-            'item'   => [16663, 16668, 17769, 17960],
-            'output' => 200,
-            'vol'    => 1.3
-        ],
-
-        16671 => [
-            'item'   => [16654, 16658],
-            'output' => 10000,
-            'vol'    => 0.01
-        ],
-
-        16672 => [
-            'item'   => [16657, 16661],
-            'output' => 10000,
-            'vol'    => 0.01
-        ],
-
-        16673 => [
-            'item'   => [16656, 16660],
-            'output' => 10000,
-            'vol'    => 0.01
-        ],
-
-        16681 => [
-            'item'   => [16661, 16662, 16667],
-            'output' => 1500,
-            'vol'    => 0.25
-        ],
-
-
-        /////////
-
-        16663 => [
-            'item' => [16643, 16647]
-        ],
-        16659 => [
-            'item' => [16633, 16636]
-        ],
-        16660 => [
-            'item' => [16635, 16636]
-        ],
-        16655 => [
-            'item' => [16640, 16643]
-        ],
-        16668 => [
-            'item' => [16646, 16650]
-        ],
-        16656 => [
-            'item' => [16639, 16642]
-        ],
-        16669 => [
-            'item' => [16648, 16650]
-        ],
-        17769 => [
-            'item' => [16651, 16653]
-        ],
-        16665 => [
-            'item' => [16641, 16644]
-        ],
-        16666 => [
-            'item' => [16642, 16652]
-        ],
-        16667 => [
-            'item' => [16646, 16651]
-        ],
-        16662 => [
-            'item' => [16644, 16649]
-        ],
-        33337 => [
-            'item' => [16646, 16652]
-        ],
-        17960 => [
-            'item' => [16643, 16652]
-        ],
-        16657 => [
-            'item' => [16637, 16644]
-        ],
-        16658 => [
-            'item' => [16635, 16636]
-        ],
-        16664 => [
-            'item' => [16641, 16647]
-        ],
-        16661 => [
-            'item' => [16634, 16635]
-        ],
-        33336 => [
-            'item' => [16648, 16653]
-        ],
-        16654 => [
-            'item' => [16638, 16641]
-        ],
-        17959 => [
-            'item' => [16642, 16648]
-        ],
-    ];
-
     private $f_money = 120000;
 
     public function main()
@@ -240,70 +82,8 @@ class MyController extends Controller
 
     public function main2()
     {
-        $eve_price = Cache::get('eve_price');
-        $eve_price = $eve_price[10000002];
-
-        foreach ($this->_Item as $id => $item) {
-            $price                  = $eve_price[$id];
-            $item['name']           = $price['name'];
-            $item['sell_money_in']  = 0;
-            $item['buy_money_in']   = 0;
-            $item['sell']           = $price['sell'];
-            $item['buy']            = $price['buy_avg'];
-            $item['buy_num']        = $price['buy_num'];
-            $output                 = isset($item['output']) ? $item['output'] : 200;
-            $item['sell_money_out'] = bcmul($output, $item['sell']);
-            $item['buy_money_out']  = bcmul($output, $item['buy']);
-            $item['output']         = $output;
-            foreach ($item['item'] as $_id) {
-                $item_price               = $eve_price[$_id];
-                $item['item_price'][$_id] = [
-                    'sell' => $item_price['sell'],
-                    'buy'  => $item_price['buy_avg']
-                ];
-                $item['sell_money_in']    += bcmul($item_price['sell'], 100);
-                $item['buy_money_in']     += bcmul($item_price['buy_avg'], 100);
-            }
-
-            // 卖单进 卖单出
-            $item['profit_0'] = $item['sell_money_out'] - $item['sell_money_in'] - $this->f_money;
-            // 卖单进 买单出
-            $item['profit_1'] = $item['buy_money_out'] - $item['sell_money_in'] - $this->f_money;
-            // 买单进 卖单出
-            $item['profit_2'] = $item['sell_money_out'] - $item['buy_money_in'] - $this->f_money;
-            // 买单进 买单出
-            $item['profit_3'] = $item['buy_money_out'] - $item['buy_money_in'] - $this->f_money;
-
-            $this->_Item[$id] = $item;
-        }
-
-        $Composite = config('Reactions.Composite');
-
-        $data = [];
-        foreach ($Composite as $id) {
-            $_item = $this->_Item[$id];
-
-            $_item['profit_item_0'] = 0;
-            $_item['profit_item_1'] = 0;
-            $_item['profit_item_2'] = 0;
-            $_item['profit_item_3'] = 0;
-            foreach ($_item['item'] as $id2) {
-                $_item['profit_item_0'] += $this->_Item[$id2]['profit_0'];
-                $_item['profit_item_1'] += $this->_Item[$id2]['profit_1'];
-                $_item['profit_item_2'] += $this->_Item[$id2]['profit_2'];
-                $_item['profit_item_3'] += $this->_Item[$id2]['profit_3'];
-            }
-
-            $count = count($_item['item']) + 2;
-
-            $_item['profit_avg_0'] = bcdiv($_item['profit_0'] * 2 + $_item['profit_item_0'], $count);
-            $_item['profit_avg_1'] = bcdiv($_item['profit_1'] * 2 + $_item['profit_item_0'], $count);
-            $_item['profit_avg_2'] = bcdiv($_item['profit_2'] * 2 + $_item['profit_item_3'], $count);
-            $_item['profit_avg_3'] = bcdiv($_item['profit_3'] * 2 + $_item['profit_item_3'], $count);
-
-            $data[$id] = $_item;
-        }
-
+        $data['feg']   = $this->profit_jisuan(10000002, 10000002);
+        $data['delve'] = $this->profit_jisuan(10000002, 10000060);
         return view('my.main2', ['data' => $data]);
     }
 
@@ -316,11 +96,11 @@ class MyController extends Controller
         $config  = config('Reactions');
         $urlList = [];
         foreach ($config['region'] as $region) {
-            foreach ($config['item'] as $item) {
+            foreach ($config['item'] as $id => $item) {
                 $urlList[] = [
-                    'url'         => str_replace(['__region__', '__type__'], [$region['id'], $item['id']], $config['api']),
+                    'url'         => str_replace(['__region__', '__type__'], [$region['id'], $id], $config['api']),
                     'region'      => $region['id'],
-                    'item'        => $item['id'],
+                    'item'        => $id,
                     'name'        => $item['name'],
                     'region_name' => $region['name'],
                     'location'    => $config['location'][$region['id']]
@@ -346,44 +126,9 @@ class MyController extends Controller
                 $item   = $urlList[$index];
                 $res    = $response->getBody()->getContents();
                 $json   = \GuzzleHttp\json_decode($res);
-                $orders = [];
-                foreach ($json as $order) {
-                    if ($order->location_id != $item['location']) continue;
-                    $temp = [
-                        'price' => $order->price,
-                        'num'   => $order->volume_remain
-                    ];
-                    if ($order->is_buy_order) {
-                        $orders['buy'][] = $temp;
-                    } else {
-                        $orders['sell'][] = $temp;
-                    }
-                }
+                $orders = EVEHelper::formatOrder($json);
 
-                if (!empty($orders['sell'])) {
-                    array_multisort(array_column($orders['sell'], 'price'), SORT_ASC, $orders['sell']);
-                }
-
-                $buy_max_price = 0;
-                $buy_total_num = 0;
-                $buy_total_bal = 0;
-                if (!empty($orders['buy'])) {
-                    array_multisort(array_column($orders['buy'], 'price'), SORT_DESC, $orders['buy']);
-                    $buy_max_price = $orders['buy'][0]['price'];
-                    foreach ($orders['buy'] as $o) {
-                        if ($o['price'] < $buy_max_price * 0.99) continue;
-                        $buy_total_num += $o['num'];
-                        $buy_total_bal += $o['num'] * $o['price'];
-                    }
-                }
-
-                $info['name']    = $item['name'];
-                $info['sell']    = empty($orders['sell']) ? 0 : $orders['sell'][0]['price'];
-                $info['buy']     = $buy_max_price;
-                $info['buy_avg'] = empty($orders['buy']) ? 0 : bcdiv($buy_total_bal, $buy_total_num, 2);
-                $info['buy_num'] = $buy_total_num;
-
-                $result[$urlList[$index]['region']][$item['item']] = $info;
+                $result[$item['item']] = EVEHelper::formatPrice($item['item'], $orders);
             },
             'rejected'  => function ($reason, $index) {
                 logger('获取订单出错', compact('reason', 'index'));
@@ -394,8 +139,128 @@ class MyController extends Controller
         $promise = $pool->promise();
         $promise->wait();
 
-        Cache::forever('eve_price', $result);
+        Cache::forever('eve_price:10000002', $result);
 
         return 'done';
+    }
+
+    public function updateDelvePrice()
+    {
+        $config  = config('Reactions');
+        $urlList = [];
+
+        set_time_limit(0);
+        $client = new Client(['verify' => false]);
+
+        $url = "https://esi.tech.ccp.is/latest/markets/structures/1022734985679/?token={$config['token']}";
+
+        $requests = function () use ($client, $url) {
+            for ($i = 1; $i <= 10; $i++) {
+                yield function () use ($client, $i, $url) {
+                    return $client->getAsync($url . "&page={$i}");
+                };
+            }
+        };
+
+
+        $orderList = [];
+        $pool      = new Pool($client, $requests(), [
+            'fulfilled' => function ($response, $index) use ($urlList, &$orderList) {
+                $res  = $response->getBody()->getContents();
+                $json = \GuzzleHttp\json_decode($res);
+
+                if (empty($json)) return;
+
+                $orderList = array_merge($orderList, $json);
+            },
+            'rejected'  => function ($reason, $index) {
+                logger('获取订单出错', compact('reason', 'index'));
+            },
+        ]);
+
+
+        // 开始发送请求
+        $promise = $pool->promise();
+        $promise->wait();
+        $result = EVEHelper::BuildPriceList($orderList);
+
+        Cache::forever('eve_price:10000060', $result);
+
+        return 'done';
+    }
+
+
+    // pub
+    public function profit_jisuan($buy_region, $sell_region)
+    {
+        $buy_Price  = Cache::get("eve_price:{$buy_region}");
+        $sell_Price = Cache::get("eve_price:{$sell_region}");
+        $itemDetail = config('Reactions.item_detail');
+        $Composite  = config('Reactions.Composite');
+
+        foreach ($itemDetail as $id => $item) {
+            if (in_array($id, $Composite)) {
+                $price = $sell_Price[$id];
+            } else {
+                $price = $buy_Price[$id];
+            }
+            $item['name']           = $price['name'];
+            $item['sell_money_in']  = 0;
+            $item['buy_money_in']   = 0;
+            $item['sell']           = $price['sell'];
+            $item['buy']            = $price['buy_avg'];
+            $item['buy_num']        = $price['buy_num'];
+            $output                 = isset($item['output']) ? $item['output'] : 200;
+            $item['sell_money_out'] = bcmul($output, $item['sell']);
+            $item['buy_money_out']  = bcmul($output, $item['buy']);
+            $item['output']         = $output;
+            foreach ($item['item'] as $_id) {
+                $item_price               = $buy_Price[$_id];
+                $item['item_price'][$_id] = [
+                    'sell' => $item_price['sell'],
+                    'buy'  => $item_price['buy_avg']
+                ];
+                $item['sell_money_in']    += bcmul($item_price['sell'], 100);
+                $item['buy_money_in']     += bcmul($item_price['buy_avg'], 100);
+            }
+
+            // 卖单进 卖单出
+            $item['profit_0'] = $item['sell_money_out'] - $item['sell_money_in'] - $this->f_money;
+            // 卖单进 买单出
+            $item['profit_1'] = $item['buy_money_out'] - $item['sell_money_in'] - $this->f_money;
+            // 买单进 卖单出
+            $item['profit_2'] = $item['sell_money_out'] - $item['buy_money_in'] - $this->f_money;
+            // 买单进 买单出
+            $item['profit_3'] = $item['buy_money_out'] - $item['buy_money_in'] - $this->f_money;
+
+            $itemDetail[$id] = $item;
+        }
+
+        $data = [];
+        foreach ($Composite as $id) {
+            $_item = $itemDetail[$id];
+
+            $_item['profit_item_0'] = 0;
+            $_item['profit_item_1'] = 0;
+            $_item['profit_item_2'] = 0;
+            $_item['profit_item_3'] = 0;
+            foreach ($_item['item'] as $id2) {
+                $_item['profit_item_0'] += $itemDetail[$id2]['profit_0'];
+                $_item['profit_item_1'] += $itemDetail[$id2]['profit_1'];
+                $_item['profit_item_2'] += $itemDetail[$id2]['profit_2'];
+                $_item['profit_item_3'] += $itemDetail[$id2]['profit_3'];
+            }
+
+            $count = count($_item['item']) + 2;
+
+            $_item['profit_avg_0'] = bcdiv($_item['profit_0'] * 2 + $_item['profit_item_0'], $count);
+            $_item['profit_avg_1'] = bcdiv($_item['profit_1'] * 2 + $_item['profit_item_0'], $count);
+            $_item['profit_avg_2'] = bcdiv($_item['profit_2'] * 2 + $_item['profit_item_3'], $count);
+            $_item['profit_avg_3'] = bcdiv($_item['profit_3'] * 2 + $_item['profit_item_3'], $count);
+
+            $data[$id] = $_item;
+        }
+
+        return $data;
     }
 }
