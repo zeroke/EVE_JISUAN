@@ -36,6 +36,7 @@
                 <th>s_t_b</th>
                 <th>b_t_s</th>
                 <th>b_t_b</th>
+                <th>profit</th>
             </tr>
             </thead>
             <tbody>
@@ -49,6 +50,7 @@
                     <td>{{ $v['profit_avg_1'] }}</td>
                     <td>{{ $v['profit_avg_2'] }}</td>
                     <td>{{ $v['profit_avg_3'] }}</td>
+                    <td>{{ $v['profit_0'] }}</td>
                 </tr>
             @endforeach
             </tbody>

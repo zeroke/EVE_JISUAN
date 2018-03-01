@@ -14,9 +14,10 @@ class MyController extends Controller
 
     public function main()
     {
-        $str  = file_get_contents('G:\\Price List.txt');
-        $arr  = explode("\r\n", $str);
-        $list = [];
+        $itemDetail = config('Reactions.item_detail');
+        $str        = file_get_contents('G:\\Price List.txt');
+        $arr        = explode("\r\n", $str);
+        $list       = [];
 
         foreach ($arr as $k => $v) {
             if ($k == 0 || empty($v) || strpos($v, "Unrefined"))
@@ -31,8 +32,8 @@ class MyController extends Controller
         }
 
         foreach ($list as $k => $v) {
-            if (array_key_exists($k, $this->_Item)) {
-                $_item              = $this->_Item[$k];
+            if (array_key_exists($k, $itemDetail)) {
+                $_item              = $itemDetail[$k];
                 $_item['money_in']  = 0;
                 $_item['price']     = $list[$k]['price'];
                 $output             = isset($_item['output']) ? $_item['output'] : 200;
@@ -44,7 +45,7 @@ class MyController extends Controller
                 }
                 $_item['profit'] = $_item['money_out'] - $_item['money_in'] - $this->f_money;
 
-                $this->_Item[$k] = $_item;
+                $itemDetail[$k] = $_item;
             }
         }
 
@@ -54,7 +55,7 @@ class MyController extends Controller
 
             $temp         = [];
             $temp['name'] = $v['name'];
-            $_item        = $this->_Item[$id];
+            $_item        = $itemDetail[$id];
 
             $temp['profit']      = $_item['profit'] * 2;
             $temp['profit_item'] = 0;
@@ -62,10 +63,10 @@ class MyController extends Controller
                 $temp['item'][] = [
                     'name'   => $list[$id2]['name'],
                     'price'  => $list[$id2]['price'],
-                    'profit' => $this->_Item[$id2]['profit']
+                    'profit' => $itemDetail[$id2]['profit']
                 ];
 
-                $temp['profit_item'] += $this->_Item[$id2]['profit'];
+                $temp['profit_item'] += $itemDetail[$id2]['profit'];
             }
 
             $temp['profit_avg'] = intval(($temp['profit'] + $temp['profit_item']) / (count($_item['item']) + 2));
@@ -197,17 +198,19 @@ class MyController extends Controller
         $sell_Price = Cache::get("eve_price:{$sell_region}");
         $itemDetail = config('Reactions.item_detail');
         $Composite  = config('Reactions.Composite');
+        $base_Price = config('Reactions.price');
 
         foreach ($itemDetail as $id => $item) {
             if (in_array($id, $Composite)) {
-                $price = $sell_Price[$id];
+                $price        = $sell_Price[$id];
+                $item['sell'] = isset($base_Price[$sell_region][$id]) ? $base_Price[$sell_region][$id]['sell'] : $price['sell'];
             } else {
-                $price = $buy_Price[$id];
+                $price        = $buy_Price[$id];
+                $item['sell'] = isset($base_Price[$buy_region][$id]) ? $base_Price[$buy_region][$id]['sell'] : $price['sell'];
             }
             $item['name']           = $price['name'];
             $item['sell_money_in']  = 0;
             $item['buy_money_in']   = 0;
-            $item['sell']           = $price['sell'];
             $item['buy']            = $price['buy_avg'];
             $item['buy_num']        = $price['buy_num'];
             $output                 = isset($item['output']) ? $item['output'] : 200;
@@ -251,7 +254,7 @@ class MyController extends Controller
                 $_item['profit_item_3'] += $itemDetail[$id2]['profit_3'];
             }
 
-            $count = count($_item['item']) + 2;
+            $count = (count($_item['item']) + 2) * ($sell_region == 10000002 ? 2 : 1.5);
 
             $_item['profit_avg_0'] = bcdiv($_item['profit_0'] * 2 + $_item['profit_item_0'], $count);
             $_item['profit_avg_1'] = bcdiv($_item['profit_1'] * 2 + $_item['profit_item_0'], $count);

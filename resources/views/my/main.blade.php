@@ -23,7 +23,7 @@
                     @endforeach
                 </ul>
             </div>
-            <div class="col-md-1">{{ $v['profit'] + $v['profit_item'] }}</div>
+            <div class="col-md-2">{{ $v['profit'] }} + {{ $v['profit_item'] }}</div>
         </div>
     @endforeach
 </div>
