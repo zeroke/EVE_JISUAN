@@ -9,10 +9,73 @@
 namespace App\Classes;
 
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Pool;
 use Illuminate\Support\Facades\Cache;
 
 class EVEHelper
 {
+
+    public static function getMarketHistory()
+    {
+        $uri = "https://esi.tech.ccp.is/latest/markets/__region__/history/?type_id=__type__";
+
+        $config = config('Reactions');
+
+        $urlList = [];
+        foreach ($config['region'] as $region) {
+            foreach ($config['Composite'] as $id) {
+                $urlList[] = [
+                    'url'         => str_replace(['__region__', '__type__'], [$region['id'], $id], $uri),
+                    'region'      => $region['id'],
+                    'item'        => $id,
+                    'region_name' => $region['name']
+                ];
+            }
+        }
+
+        set_time_limit(0);
+        $client = new Client(['verify' => false]);
+
+        $requests = function () use ($client, $urlList) {
+            foreach ($urlList as $v) {
+                yield function () use ($client, $v) {
+                    return $client->getAsync($v['url']);
+                };
+            }
+        };
+
+        $result = [];
+        $pool   = new Pool($client, $requests(), [
+//            'concurrency' => 10,
+            'fulfilled' => function ($response, $index) use ($urlList, &$result) {
+                $item = $urlList[$index];
+                $res  = $response->getBody()->getContents();
+                $json = \GuzzleHttp\json_decode($res);
+
+                $arr = array_slice($json, -30, 30);
+
+                $totalVol = 0;
+                foreach ($arr as $v) {
+                    $totalVol += $v->volume;
+                }
+                $avg_vol = $totalVol / count($arr);
+
+                $result[$item['region']][$item['item']] = intval($avg_vol);
+            },
+            'rejected'  => function ($reason, $index) {
+                logger('获取历史交易记录出错', compact('reason', 'index'));
+            },
+        ]);
+
+        // 开始发送请求
+        $promise = $pool->promise();
+        $promise->wait();
+
+        Cache::forever('eve_history', $result);
+    }
+
+
     public static function BuildPriceList($json)
     {
         $orders = self::formatOrderList($json);

@@ -83,9 +83,16 @@ class MyController extends Controller
 
     public function main2()
     {
-        $data['feg']   = $this->profit_jisuan(10000002, 10000002);
-        $data['delve'] = $this->profit_jisuan(10000002, 10000060);
+        $data['10000002'] = $this->profit_jisuan(10000002, 10000002);
+        $data['10000060'] = $this->profit_jisuan(10000002, 10000060);
         return view('my.main2', ['data' => $data]);
+    }
+
+    public function updateMarketHistory()
+    {
+        EVEHelper::getMarketHistory();
+
+        return 'done';
     }
 
     public function updatePrice()
@@ -97,6 +104,7 @@ class MyController extends Controller
         $config  = config('Reactions');
         $urlList = [];
         foreach ($config['region'] as $region) {
+            if ($region['id'] == 10000060) continue;
             foreach ($config['item'] as $id => $item) {
                 $urlList[] = [
                     'url'         => str_replace(['__region__', '__type__'], [$region['id'], $id], $config['api']),
@@ -194,6 +202,7 @@ class MyController extends Controller
     // pub
     public function profit_jisuan($buy_region, $sell_region)
     {
+        $history    = Cache::get('eve_history');
         $buy_Price  = Cache::get("eve_price:{$buy_region}");
         $sell_Price = Cache::get("eve_price:{$sell_region}");
         $itemDetail = config('Reactions.item_detail');
@@ -260,6 +269,7 @@ class MyController extends Controller
             $_item['profit_avg_1'] = bcdiv($_item['profit_1'] * 2 + $_item['profit_item_0'], $count);
             $_item['profit_avg_2'] = bcdiv($_item['profit_2'] * 2 + $_item['profit_item_3'], $count);
             $_item['profit_avg_3'] = bcdiv($_item['profit_3'] * 2 + $_item['profit_item_3'], $count);
+            $_item['avg_vol']      = $history[$sell_region][$id];
 
             $data[$id] = $_item;
         }

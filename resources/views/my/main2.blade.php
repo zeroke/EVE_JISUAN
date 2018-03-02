@@ -18,8 +18,8 @@
 <body>
 
 <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#feg" aria-controls="feg" role="tab" data-toggle="tab">伏尔戈</a></li>
-    <li role="presentation"><a href="#delve" aria-controls="delve" role="tab" data-toggle="tab">绝地</a></li>
+    <li role="presentation" class="active"><a href="#10000002" aria-controls="feg" role="tab" data-toggle="tab">伏尔戈</a></li>
+    <li role="presentation"><a href="#10000060" aria-controls="delve" role="tab" data-toggle="tab">绝地</a></li>
 </ul>
 <div class="tab-content">
 @foreach($data as $k => $region)
@@ -30,6 +30,7 @@
             <tr>
                 <th>名称</th>
                 <th data-sortable="false">输出</th>
+                <th data-sortable="false">平均交易量(30D)</th>
                 <th data-sortable="false">买单</th>
                 <th data-sortable="false">卖单</th>
                 <th>s_t_s</th>
@@ -43,7 +44,8 @@
             @foreach($region as $v)
                 <tr>
                     <td>{{ $v['name'] }}</td>
-                    <td>{{ $v['output'] * $v['vol'] }} m3 / {{ $v['output'] }}</td>
+                    <td>{{ $v['output'] * $v['vol'] }} m3 / {{ $v['output'] }} / {{ $v['output'] * ($k == '10000002' ? 110 : 150) }}</td>
+                    <td>{{ $v['avg_vol'] }}</td>
                     <td>{{ $v['buy'] }} / {{ $v['buy_num'] }}</td>
                     <td>{{ $v['sell'] }}</td>
                     <td>{{ $v['profit_avg_0'] }}</td>
@@ -62,7 +64,7 @@
 <script>
     $(function () {
         $('.table').dataTable({
-            'order': [4, 'desc'],
+            'order': [5, 'desc'],
             'pageLength': 50
         });
 
