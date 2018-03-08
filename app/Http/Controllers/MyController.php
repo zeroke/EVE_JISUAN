@@ -150,7 +150,7 @@ class MyController extends Controller
 
         Cache::forever('eve_price:10000002', $result);
 
-        return 'done';
+        return "done ".count($result)." item update price";
     }
 
     public function updateDelvePrice()
@@ -270,6 +270,10 @@ class MyController extends Controller
             $_item['profit_avg_2'] = bcdiv($_item['profit_2'] * 2 + $_item['profit_item_3'], $count);
             $_item['profit_avg_3'] = bcdiv($_item['profit_3'] * 2 + $_item['profit_item_3'], $count);
             $_item['avg_vol']      = $history[$sell_region][$id];
+
+            $b                            = $sell_region == 10000002 ? 2 : 1.5;
+            $_item['profit_simple_avg_0'] = bcdiv($_item['profit_0'], $b);
+            $_item['profit_simple_avg_3'] = bcdiv($_item['profit_3'], $b);
 
             $data[$id] = $_item;
         }

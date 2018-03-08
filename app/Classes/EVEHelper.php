@@ -112,7 +112,7 @@ class EVEHelper
     {
         $orders = [];
         foreach ($arr as $order) {
-            if ($order->location_id != '60003760') continue;
+            if (!$order->is_buy_order && $order->location_id != '60003760') continue;
             $temp = [
                 'price' => $order->price,
                 'num'   => $order->volume_remain

@@ -34,10 +34,11 @@
                 <th data-sortable="false">买单</th>
                 <th data-sortable="false">卖单</th>
                 <th>s_t_s</th>
-                <th>s_t_b</th>
                 <th>b_t_s</th>
+                <th>s_t_b</th>
                 <th>b_t_b</th>
-                <th>profit</th>
+                <th>profit_0</th>
+                <th>profit_3</th>
             </tr>
             </thead>
             <tbody>
@@ -49,10 +50,11 @@
                     <td>{{ $v['buy'] }} / {{ $v['buy_num'] }}</td>
                     <td>{{ $v['sell'] }}</td>
                     <td>{{ $v['profit_avg_0'] }}</td>
-                    <td>{{ $v['profit_avg_1'] }}</td>
                     <td>{{ $v['profit_avg_2'] }}</td>
+                    <td>{{ $v['profit_avg_1'] }}</td>
                     <td>{{ $v['profit_avg_3'] }}</td>
-                    <td>{{ $v['profit_0'] }}</td>
+                    <td>{{ $v['profit_simple_avg_0'] }}</td>
+                    <td>{{ $v['profit_simple_avg_3'] }}</td>
                 </tr>
             @endforeach
             </tbody>
