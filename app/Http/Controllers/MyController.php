@@ -83,9 +83,14 @@ class MyController extends Controller
 
     public function main2()
     {
+        return view('my.main2');
+    }
+
+    public function jisuan()
+    {
         $data['10000002'] = $this->profit_jisuan(10000002, 10000002);
         $data['10000060'] = $this->profit_jisuan(10000002, 10000060);
-        return view('my.main2', ['data' => $data]);
+        return response()->json(array_values($data['10000002']));
     }
 
     public function updateMarketHistory()
@@ -150,7 +155,7 @@ class MyController extends Controller
 
         Cache::forever('eve_price:10000002', $result);
 
-        return "done ".count($result)." item update price";
+        return "done " . count($result) . " item update price";
     }
 
     public function updateDelvePrice()
@@ -210,6 +215,7 @@ class MyController extends Controller
         $base_Price = config('Reactions.price');
 
         foreach ($itemDetail as $id => $item) {
+            $item['id'] = $id;
             if (in_array($id, $Composite)) {
                 $price        = $sell_Price[$id];
                 $item['sell'] = isset($base_Price[$sell_region][$id]) ? $base_Price[$sell_region][$id]['sell'] : $price['sell'];

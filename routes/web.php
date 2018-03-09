@@ -11,6 +11,10 @@
 |
 */
 
+Route::get("/", function () {
+    return view('welcome');
+});
+
 Route::get('/my', 'MyController@main');
 Route::get('/my2', 'MyController@main2');
 

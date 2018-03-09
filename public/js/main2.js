@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 37);
+/******/ 	return __webpack_require__(__webpack_require__.s = 43);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -42850,22 +42850,28 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 37 */
+/* 37 */,
+/* 38 */,
+/* 39 */,
+/* 40 */,
+/* 41 */,
+/* 42 */,
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(38);
-module.exports = __webpack_require__(42);
+module.exports = __webpack_require__(44);
 
 
 /***/ }),
-/* 38 */
+/* 44 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue__);
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_axios__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_axios___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_axios__);
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -42876,29 +42882,51 @@ __webpack_require__(10);
 
 
 
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-__WEBPACK_IMPORTED_MODULE_0_vue___default.a.component('example-component', __webpack_require__(39));
+__WEBPACK_IMPORTED_MODULE_0_vue___default.a.component('main2', __webpack_require__(45));
 
 var app = new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
-  el: '#app',
-  component: "example-component"
+    el: '#app',
+    component: "main2",
+    template: '<main2 :list="list" v-on:sort="sort"></main2>',
+    data: {
+        list: []
+    },
+
+    methods: {
+        sort: function sort(type) {
+            this.list.sort(this.sortDesc(type));
+        },
+        sortDesc: function sortDesc(name) {
+            return function (o, p) {
+                var a = o[name];
+                var b = p[name];
+                return b - a;
+            };
+        }
+    }
+});
+
+__WEBPACK_IMPORTED_MODULE_1_axios___default.a.get('/api/jisuan').then(function (res) {
+    app.list = res.data;
 });
 
 /***/ }),
-/* 39 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(36)
 /* script */
-var __vue_script__ = __webpack_require__(40)
+var __vue_script__ = __webpack_require__(46)
 /* template */
-var __vue_template__ = __webpack_require__(41)
+var __vue_template__ = __webpack_require__(47)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -42915,7 +42943,7 @@ var Component = normalizeComponent(
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "resources\\assets\\js\\components\\ExampleComponent.vue"
+Component.options.__file = "resources\\assets\\js\\components\\main2.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -42924,9 +42952,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-0ca92eac", Component.options)
+    hotAPI.createRecord("data-v-411dff5c", Component.options)
   } else {
-    hotAPI.reload("data-v-0ca92eac", Component.options)
+    hotAPI.reload("data-v-411dff5c", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -42937,11 +42965,33 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 40 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -42960,59 +43010,111 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    mounted: function mounted() {
-        console.log('Component mounted.');
+    props: ['list'],
+
+    methods: {
+        sort: function sort(type) {
+            this.$emit('sort', type);
+        }
     }
 });
 
 /***/ }),
-/* 41 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "container" }, [
-      _c("div", { staticClass: "row" }, [
-        _c("div", { staticClass: "col-md-8 col-md-offset-2" }, [
-          _c("div", { staticClass: "panel panel-default" }, [
-            _c("div", { staticClass: "panel-heading" }, [
-              _vm._v("Example Component")
+  return _c("div", { staticClass: "tab-pane", staticStyle: { width: "95%" } }, [
+    _c("div", { staticClass: "panel-heading" }, [_vm._v("Panel heading")]),
+    _vm._v(" "),
+    _c("table", { staticClass: "table" }, [
+      _c("thead", [
+        _c("tr", [
+          _c("th", [_vm._v("名称")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("输出")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("平均交易量(30D)")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("买单")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("卖单")]),
+          _vm._v(" "),
+          _c(
+            "th",
+            {
+              on: {
+                click: function($event) {
+                  _vm.sort("profit_avg_0")
+                }
+              }
+            },
+            [_vm._v("s_t_s")]
+          ),
+          _vm._v(" "),
+          _c("th", [_vm._v("b_t_s")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("s_t_b")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("b_t_b")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("profit_0")]),
+          _vm._v(" "),
+          _c("th", [_vm._v("profit_3")])
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "tbody",
+        _vm._l(_vm.list, function(item) {
+          return _c("tr", { key: item.id }, [
+            _c("td", [_vm._v(_vm._s(item.name))]),
+            _vm._v(" "),
+            _c("td", [
+              _vm._v(
+                _vm._s(item.output * item.vol) +
+                  " m3 / " +
+                  _vm._s(item.output) +
+                  " / " +
+                  _vm._s(item.output * 110)
+              )
             ]),
             _vm._v(" "),
-            _c("div", { staticClass: "panel-body" }, [
-              _vm._v(
-                "\n                    I'm an example component!\n                "
-              )
-            ])
+            _c("td", [_vm._v(_vm._s(item.avg_vol))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.buy) + " / " + _vm._s(item.buy_num))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.sell))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_avg_0))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_avg_2))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_avg_1))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_avg_3))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_simple_avg_0))]),
+            _vm._v(" "),
+            _c("td", [_vm._v(_vm._s(item.profit_simple_avg_3))])
           ])
-        ])
-      ])
+        })
+      )
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-0ca92eac", module.exports)
+    require("vue-hot-reload-api")      .rerender("data-v-411dff5c", module.exports)
   }
 }
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);
