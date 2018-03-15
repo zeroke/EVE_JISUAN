@@ -14,76 +14,16 @@ class MyController extends Controller
 
     public function main()
     {
-        $itemDetail = config('Reactions.item_detail');
-        $str        = file_get_contents('G:\\Price List.txt');
-        $arr        = explode("\r\n", $str);
-        $list       = [];
 
-        foreach ($arr as $k => $v) {
-            if ($k == 0 || empty($v) || strpos($v, "Unrefined"))
-                continue;
-
-            $temp           = explode("|", $v);
-            $list[$temp[5]] = [
-                'name'  => $temp[1],
-                'price' => $temp[2],
-                'group' => $temp[0]
-            ];
-        }
-
-        foreach ($list as $k => $v) {
-            if (array_key_exists($k, $itemDetail)) {
-                $_item              = $itemDetail[$k];
-                $_item['money_in']  = 0;
-                $_item['price']     = $list[$k]['price'];
-                $output             = isset($_item['output']) ? $_item['output'] : 200;
-                $_item['money_out'] = bcmul($output, $v['price']);
-                $_item['output']    = $output;
-                foreach ($_item['item'] as $id) {
-                    $_item['item_money'][] = bcmul($list[$id]['price'], 100);
-                    $_item['money_in']     += bcmul($list[$id]['price'], 100);
-                }
-                $_item['profit'] = $_item['money_out'] - $_item['money_in'] - $this->f_money;
-
-                $itemDetail[$k] = $_item;
-            }
-        }
-
-        $data = [];
-        foreach ($list as $id => $v) {
-            if ($v['group'] != 'Composite') continue;
-
-            $temp         = [];
-            $temp['name'] = $v['name'];
-            $_item        = $itemDetail[$id];
-
-            $temp['profit']      = $_item['profit'] * 2;
-            $temp['profit_item'] = 0;
-            foreach ($_item['item'] as $id2) {
-                $temp['item'][] = [
-                    'name'   => $list[$id2]['name'],
-                    'price'  => $list[$id2]['price'],
-                    'profit' => $itemDetail[$id2]['profit']
-                ];
-
-                $temp['profit_item'] += $itemDetail[$id2]['profit'];
-            }
-
-            $temp['profit_avg'] = intval(($temp['profit'] + $temp['profit_item']) / (count($_item['item']) + 2));
-            $temp['output']     = $_item['output'];
-            $temp['price']      = $_item['price'];
-
-            $data[$v['group']][$id] = $temp;
-        }
-
-        array_multisort(array_column($data['Composite'], 'profit_avg'), SORT_DESC, $data['Composite']);
 
         return view('my.main', ['data' => $data]);
     }
 
     public function main2()
     {
-        return view('my.main2');
+        $data['10000002'] = $this->profit_jisuan(10000002, 10000002);
+        $data['10000060'] = $this->profit_jisuan(10000002, 10000060);
+        return view('my.main2', ['data' => $data]);
     }
 
     public function jisuan()

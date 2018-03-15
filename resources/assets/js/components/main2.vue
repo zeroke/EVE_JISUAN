@@ -18,9 +18,9 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item in list" v-bind:key="item.id">
+            <tr v-for="item in sortList" v-bind:key="item.id">
                 <td>{{ item.name }}</td>
-                <td>{{ item.output * item.vol }} m3 / {{ item.output }} / {{ item.output * 110 }}</td>
+                <td>{{ item.output * item.vol }} m3 / {{ item.output }} / {{ item.output * 780 }}</td>
                 <td>{{ item.avg_vol }}</td>
                 <td>{{ item.buy }} / {{ item.buy_num }}</td>
                 <td>{{ item.sell }}</td>
@@ -38,11 +38,26 @@
 
 <script>
     export default {
+//        created: function () {
+//            console.log('组件被调用')
+//        },
+
         props: ['list'],
 
         methods: {
-            sort(type) {
-                this.$emit('sort', type);
+            sortDesc(name) {
+                return function (o, p) {
+                    let a = o[name];
+                    let b = p[name];
+                    return b - a;
+                }
+            }
+        },
+        computed: {
+            // 计算属性的 getter
+            sortList: function () {
+                // `this` 指向 vm 实例
+                return this.list.sort(this.sortDesc('profit_avg_0'));
             }
         }
     }

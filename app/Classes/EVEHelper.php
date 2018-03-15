@@ -139,7 +139,7 @@ class EVEHelper
         $buy_total_bal = 0;
         if (!empty($orders['buy'])) {
             array_multisort(array_column($orders['buy'], 'price'), SORT_DESC, $orders['buy']);
-            $buy_max_price = $orders['buy'][0]['price'];
+            $buy_max_price = $orders['buy'][1]['price'];
             foreach ($orders['buy'] as $o) {
                 if ($o['price'] < $buy_max_price * 0.99) continue;
                 $buy_total_num += $o['num'];

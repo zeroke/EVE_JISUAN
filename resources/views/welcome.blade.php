@@ -9,28 +9,12 @@
 
 
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    {{--<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>--}}
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 </head>
 <body>
 
 @verbatim
-    <div id="app-7">
-        <div>
-            <span v-for="n in 10">{{ n }} </span>
-        </div>
-        <ul>
-            <!--
-              现在我们为每个 todo-item 提供 todo 对象
-              todo 对象是变量，即其内容可以是动态的。
-              我们也需要为每个组件提供一个“key”，稍后再
-              作详细解释。
-            -->
-            <todo-item
-                    v-for="item in groceryList"
-                    v-bind:todo="item"
-                    v-bind:key="item.id">
-            </todo-item>
-        </ul>
+    <div id="app">
     </div>
 @endverbatim
 
@@ -39,20 +23,35 @@
 {{--<script src="{{ asset("js/app.js") }}"></script>--}}
 
 <script>
-    Vue.component('todo-item', {
-        props: ['todo'],
-        template: '<li>@{{ todo.text }}</li>'
+
+    const Home = { template: '<div>This is Home</div>' }
+    const Foo = { template: '<div>This is Foo</div>' }
+    const Bar = { template: '<div>This is Bar @{{ $route.params.id }}</div>' }
+
+    const router = new VueRouter({
+        mode: 'history',
+        base: '/',
+        routes: [
+            { path: '/', name: 'home', component: Home },
+            { path: '/foo', name: 'foo', component: Foo },
+            { path: '/bar/:id', name: 'bar', component: Bar }
+        ]
     })
 
-    var app7 = new Vue({
-        el: '#app-7',
-        data: {
-            groceryList: [
-                { id: 0, text: '蔬菜' },
-                { id: 1, text: '奶酪' },
-                { id: 2, text: '随便其它什么人吃的东西' }
-            ]
-        }
-    })
+    new Vue({
+        router,
+        template: `
+    <div id="app">
+      <h1>Named Routes</h1>
+      <p>Current route name: @{{ $route.name }}</p>
+      <ul>
+        <li><router-link :to="{ name: 'home' }">home</router-link></li>
+        <li><router-link :to="{ name: 'foo' }">foo</router-link></li>
+        <li><router-link :to="{ name: 'bar', params: { id: 123 }}">bar</router-link></li>
+      </ul>
+      <router-view class="view"></router-view>
+    </div>
+  `
+    }).$mount('#app')
 </script>
 </html>

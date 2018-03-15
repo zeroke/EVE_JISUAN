@@ -42883,34 +42883,27 @@ __webpack_require__(10);
 
 
 
+// import main2 from './components/main2';
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-__WEBPACK_IMPORTED_MODULE_0_vue___default.a.component('main2', __webpack_require__(45));
+// Vue.component('main2', require('./components/main2.vue'));
 
 var app = new __WEBPACK_IMPORTED_MODULE_0_vue___default.a({
     el: '#app',
-    component: "main2",
-    template: '<main2 :list="list" v-on:sort="sort"></main2>',
+    components: {
+        'main2': __webpack_require__(45)
+    },
+    template: '<main2 :list="list"></main2>',
     data: {
         list: []
     },
 
-    methods: {
-        sort: function sort(type) {
-            this.list.sort(this.sortDesc(type));
-        },
-        sortDesc: function sortDesc(name) {
-            return function (o, p) {
-                var a = o[name];
-                var b = p[name];
-                return b - a;
-            };
-        }
-    }
+    methods: {}
 });
 
 __WEBPACK_IMPORTED_MODULE_1_axios___default.a.get('/api/jisuan').then(function (res) {
@@ -43010,11 +43003,26 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+    //        created: function () {
+    //            console.log('组件被调用')
+    //        },
+
     props: ['list'],
 
     methods: {
-        sort: function sort(type) {
-            this.$emit('sort', type);
+        sortDesc: function sortDesc(name) {
+            return function (o, p) {
+                var a = o[name];
+                var b = p[name];
+                return b - a;
+            };
+        }
+    },
+    computed: {
+        // 计算属性的 getter
+        sortList: function sortList() {
+            // `this` 指向 vm 实例
+            return this.list.sort(this.sortDesc('profit_avg_0'));
         }
     }
 });
@@ -43069,7 +43077,7 @@ var render = function() {
       _vm._v(" "),
       _c(
         "tbody",
-        _vm._l(_vm.list, function(item) {
+        _vm._l(_vm.sortList, function(item) {
           return _c("tr", { key: item.id }, [
             _c("td", [_vm._v(_vm._s(item.name))]),
             _vm._v(" "),
@@ -43079,7 +43087,7 @@ var render = function() {
                   " m3 / " +
                   _vm._s(item.output) +
                   " / " +
-                  _vm._s(item.output * 110)
+                  _vm._s(item.output * 780)
               )
             ]),
             _vm._v(" "),
